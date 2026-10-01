@@ -1,0 +1,5 @@
+/folder-scan
+/*.test
+/coverage.out
+/stress-report.json
+.DS_Store
