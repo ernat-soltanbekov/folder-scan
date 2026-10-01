@@ -12,7 +12,7 @@ type widths struct {
 	marker                                         bool
 }
 
-func (r *Runner) display(entries []Entry, directory bool) {
+func (r *Runner) display(entries []Entry, directory bool, widthOperands []Entry) {
 	// The common recursive listing needs no column measurements or formatting.
 	if !r.Options.Long && !r.Options.Inode {
 		for _, entry := range entries {
@@ -22,7 +22,13 @@ func (r *Runner) display(entries []Entry, directory bool) {
 	}
 	w := widths{}
 	var blocks int64
-	for _, entry := range entries {
+	measured := entries
+	// GNU ls measures all command-line operands before separating files from
+	// directory listings. BSD measures the displayed file group on its own.
+	if len(widthOperands) > 0 {
+		measured = append(append([]Entry(nil), entries...), widthOperands...)
+	}
+	for _, entry := range measured {
 		w.links = max(w.links, len(strconv.FormatUint(entry.Stat.Links, 10)))
 		w.owner = max(w.owner, len([]rune(entry.Owner)))
 		w.group = max(w.group, len([]rune(entry.Group)))

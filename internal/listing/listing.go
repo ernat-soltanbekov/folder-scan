@@ -75,7 +75,11 @@ func (r *Runner) Run(paths []string) int {
 	r.order(files)
 	r.order(dirs)
 	if len(files) > 0 {
-		r.display(files, false)
+		var widthOperands []Entry
+		if !darwin {
+			widthOperands = dirs
+		}
+		r.display(files, false, widthOperands)
 		r.printed = true
 	}
 	for _, entry := range dirs {
@@ -181,7 +185,7 @@ func (r *Runner) walk(root directory) {
 		if task.header {
 			r.emit(task.path + ":\n")
 		}
-		r.display(entries, true)
+		r.display(entries, true, nil)
 		r.printed = true
 		if !r.Options.NoProfile {
 			counts := make(map[string]int, 4)

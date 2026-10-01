@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"syscall"
 	"testing"
@@ -138,6 +139,28 @@ func TestMissingOperandDoesNotHideValidOperand(t *testing.T) {
 	out, stderr, code := execute(t, join(root, "missing"), path)
 	if code == 0 || out != path+"\n" || !strings.Contains(stderr, "missing") {
 		t.Fatal(out, stderr, code)
+	}
+}
+
+func TestMixedOperandColumnWidths(t *testing.T) {
+	root := t.TempDir()
+	path := join(root, "file")
+	file(t, path, 0600)
+	out, stderr, code := execute(t, "-l", path, root)
+	if code != 0 || stderr != "" {
+		t.Fatal(out, stderr, code)
+	}
+	info, err := os.Stat(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	width := 1
+	if !darwin {
+		width = max(width, len(strconv.FormatInt(info.Size(), 10)))
+	}
+	first := strings.Split(out, "\n")[0]
+	if !strings.Contains(first, fmt.Sprintf(" %*d ", width, 4)) {
+		t.Fatal("wrong platform-specific operand width", first, width)
 	}
 }
 
